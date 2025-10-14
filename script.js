@@ -2,11 +2,6 @@ const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9cePrDxFCkjL
 
 let currentLanguage = localStorage.getItem('language') || 'IT';
 
-function convertToDirectLink(driveUrl) {
-    if (!driveUrl) return '';
-    const match = driveUrl.match(/id=([^&]+)/);
-    return match ? `https://drive.google.com/thumbnail?id=${match[1]}` : driveUrl;
-}
 
 function loadSiteData() {
     Papa.parse(sheetUrl, {
@@ -74,13 +69,4 @@ function setupLanguageToggle() {
 window.addEventListener('DOMContentLoaded', () => {
     loadSiteData();
     setupLanguageToggle();
-
-    // Scroll per nascondere e mostrare il contenitore immagini
-    let lastScrollTop = 0;
-    const imagesWrapper = document.querySelector('.images-wrapper');
-    window.addEventListener('scroll', function() {
-        let scrollTop = window.scrollY || document.documentElement.scrollTop;
-        imagesWrapper.style.transform = scrollTop > lastScrollTop ? 'translateY(-100%)' : 'translateY(0)';
-        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-    });
 });
