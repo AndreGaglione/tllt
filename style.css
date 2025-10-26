@@ -125,3 +125,160 @@ hr {
 .interview-section a {
   color: red;
 }
+
+.inline-interview-img {
+  display: block;
+  margin: 1.5rem auto;
+  max-width: 90%;
+  max-height: 300px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Mobile Layout - nasconde desktop su mobile */
+@media screen and (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .mobile-container {
+    display: block;
+    width: 100vw;
+    min-height: 100vh;
+    padding-top: 60px; /* spazio per header fisso */
+  }
+}
+
+/* Desktop Layout - nasconde mobile su desktop */
+@media screen and (min-width: 769px) {
+  .mobile-header,
+  .mobile-container {
+    display: none !important;
+  }
+}
+
+/* Mobile Header con Hamburger Menu */
+.mobile-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 60px;
+  background: black;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+}
+
+.hamburger-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 24px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.mobile-menu {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  background: black;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.mobile-menu.open {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.mobile-names {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mobile-names li {
+  color: white;
+  padding: 15px 20px;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.mobile-names li:hover,
+.mobile-names li.active {
+  background: #333;
+  color: red;
+}
+
+/* Mobile Slider */
+.mobile-slider {
+  width: 100vw;
+  height: 40vh;
+  background: transparent;
+  overflow: hidden;
+  position: relative;
+}
+
+.mobile-slider .slider-container {
+  display: flex;
+  animation: slide 15s infinite;
+}
+
+.mobile-slider img {
+  min-width: 100vw;
+  height: 40vh;
+  object-fit: contain;
+}
+
+@keyframes slide {
+  0%, 20% { transform: translateX(0); }
+  25%, 45% { transform: translateX(-100vw); }
+  50%, 70% { transform: translateX(-200vw); }
+  75%, 95% { transform: translateX(-300vw); }
+  100% { transform: translateX(0); }
+}
+
+/* Mobile Interview */
+.mobile-interview {
+  padding: 20px;
+  width: 100vw;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+
+.mobile-interview .inline-interview-img {
+  max-width: 100%;
+  max-height: 250px;
+}
+
+/* Mobile Language Toggle */
+.mobile-lang-toggle {
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  background: red;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+/* Progress Bar */
+.progress-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: red;
+  width: 0%;
+  z-index: 1000;
+  transition: width 0.1s ease-out;
+  opacity: 0;
+}

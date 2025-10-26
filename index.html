@@ -8,7 +8,17 @@
 </head>
 <body>
     <!--<marquee class="header-marquee">TLLT - TUTTI LIBERI LIBERE TUTTE</marquee>-->
-    <div class="container">
+    
+    <!-- Mobile hamburger menu -->
+    <div class="mobile-header">
+        <button class="hamburger-btn" id="hamburgerBtn">☰</button>
+        <div class="mobile-menu" id="mobileMenu">
+            <ul class="mobile-names" id="mobileNamesList"></ul>
+        </div>
+    </div>
+    
+    <!-- Desktop layout -->
+    <div class="container desktop-only">
         <ul class="names" id="namesList"></ul>
         <div class="content">
             <div class="images-section" id="imagesContainer"></div>
@@ -16,6 +26,17 @@
         </div>
         <button id="languageToggle" style="position: fixed; top: 10px; right: 10px; z-index: 999;">IT</button>
     </div>
+    
+    <!-- Mobile layout -->
+    <div class="mobile-container">
+        <div class="mobile-slider" id="mobileSlider"></div>
+        <div class="mobile-interview" id="mobileInterview"></div>
+        <button id="mobileLanguageToggle" class="mobile-lang-toggle">IT</button>
+    </div>
+    
+    <!-- Progress bar -->
+    <div class="progress-bar" id="progressBar"></div>
+    
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
     <script src="script.js"></script>
 </body>

@@ -2,6 +2,16 @@ const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9cePrDxFCkjL
 
 let currentLanguage = localStorage.getItem('language') || 'IT';
 
+// Funzione per convertire link Google Drive in thumbnail
+function convertToDirectLink(driveUrl) {
+    if (!driveUrl) return '';
+    let match = driveUrl.match(/id=([\w-]+)/);
+    if (!match) {
+        match = driveUrl.match(/\/d\/([\w-]+)/);
+    }
+    return match ? `https://drive.google.com/thumbnail?id=${match[1]}` : driveUrl;
+}
+
 
 function loadSiteData() {
     Papa.parse(sheetUrl, {
@@ -10,24 +20,47 @@ function loadSiteData() {
         complete: function(results) {
             const data = results.data;
             const namesList = document.getElementById('namesList');
+            const mobileNamesList = document.getElementById('mobileNamesList');
             const imagesContainer = document.getElementById('imagesContainer');
             const interviewContainer = document.getElementById('interviewContainer');
+            const mobileSlider = document.getElementById('mobileSlider');
+            const mobileInterview = document.getElementById('mobileInterview');
 
             data.forEach(row => {
+                // Desktop list item
                 const li = document.createElement('li');
                 li.textContent = row.name;
                 li.classList.add('name-item');
 
-                li.addEventListener('click', () => {
-                    // Evidenzia attivo
+                // Mobile list item
+                const mobileLi = document.createElement('li');
+                mobileLi.textContent = row.name;
+                mobileLi.classList.add('mobile-name-item');
+
+                const clickHandler = () => {
+                    // Evidenzia attivo (desktop)
                     document.querySelectorAll('.name-item').forEach(el => el.classList.remove('active'));
                     li.classList.add('active');
+                    
+                    // Evidenzia attivo (mobile)
+                    document.querySelectorAll('.mobile-name-item').forEach(el => el.classList.remove('active'));
+                    mobileLi.classList.add('active');
+                    
+                    // Chiudi menu mobile
+                    document.getElementById('mobileMenu').classList.remove('open');
 
-                    // Immagini
+                    // Immagini desktop
                     const imageLinks = (row["Image list"] || "").split(',').map(link => link.trim());
                     imagesContainer.innerHTML = imageLinks.map(link => `<img src="${link}" alt="image">`).join('');
 
-                    // Intervista
+                    // Slider mobile
+                    if (imageLinks.length > 0) {
+                        mobileSlider.innerHTML = `<div class="slider-container">
+                            ${imageLinks.map(link => `<img src="${link}" alt="image">`).join('')}
+                        </div>`;
+                    }
+
+                    // Intervista (sia desktop che mobile)
                     const interviewUrl = currentLanguage === 'ENG' ? row['interview - ENG'] : row['interview - IT'];
                     if (interviewUrl) {
                         fetch(interviewUrl)
@@ -37,18 +70,32 @@ function loadSiteData() {
                                 const doc = parser.parseFromString(html, 'text/html');
                                 const content = doc.querySelector('.doc-content');
                                 if (content) {
-                                    interviewContainer.innerHTML = content.innerHTML;
+                                    // Sostituisci [IMG: url] con <img src="...">
+                                    let processedHtml = content.innerHTML.replace(/\[IMG:\s*([^\]]+)\]/g, (match, url) => {
+                                        const cleanUrl = url.trim();
+                                        return `<img src="${convertToDirectLink(cleanUrl)}" alt="inline image" class="inline-interview-img">`;
+                                    });
+                                    interviewContainer.innerHTML = processedHtml;
+                                    mobileInterview.innerHTML = processedHtml;
                                 } else {
-                                    interviewContainer.innerHTML = '<p>Unable to load interview content.</p>';
+                                    const errorMsg = '<p>Unable to load interview content.</p>';
+                                    interviewContainer.innerHTML = errorMsg;
+                                    mobileInterview.innerHTML = errorMsg;
                                 }
                             })
                             .catch(err => {
-                                interviewContainer.innerHTML = '<p>Error loading interview content.</p>';
+                                const errorMsg = '<p>Error loading interview content.</p>';
+                                interviewContainer.innerHTML = errorMsg;
+                                mobileInterview.innerHTML = errorMsg;
                             });
                     }
-                });
+                };
 
-                namesList.appendChild(li);
+                li.addEventListener('click', clickHandler);
+                mobileLi.addEventListener('click', clickHandler);
+
+                if (namesList) namesList.appendChild(li);
+                if (mobileNamesList) mobileNamesList.appendChild(mobileLi);
             });
         }
     });
@@ -56,17 +103,105 @@ function loadSiteData() {
 
 function setupLanguageToggle() {
     const langToggle = document.getElementById('languageToggle');
-    langToggle.textContent = currentLanguage;
-    langToggle.addEventListener('click', () => {
-        currentLanguage = currentLanguage === 'IT' ? 'ENG' : 'IT';
+    const mobileLangToggle = document.getElementById('mobileLanguageToggle');
+    
+    function updateLanguage(newLang) {
+        currentLanguage = newLang;
         localStorage.setItem('language', currentLanguage);
+        if (langToggle) langToggle.textContent = currentLanguage;
+        if (mobileLangToggle) mobileLangToggle.textContent = currentLanguage;
+        
+        // Reload content in new language
+        const activeItem = document.querySelector('.name-item.active') || document.querySelector('.mobile-name-item.active');
+        if (activeItem) activeItem.click();
+    }
+    
+    if (langToggle) {
         langToggle.textContent = currentLanguage;
-        const activeItem = document.querySelector('.name-item.active');
-        if (activeItem) activeItem.click(); // Reload content in the new language
-    });
+        langToggle.addEventListener('click', () => {
+            const newLang = currentLanguage === 'IT' ? 'ENG' : 'IT';
+            updateLanguage(newLang);
+        });
+    }
+    
+    if (mobileLangToggle) {
+        mobileLangToggle.textContent = currentLanguage;
+        mobileLangToggle.addEventListener('click', () => {
+            const newLang = currentLanguage === 'IT' ? 'ENG' : 'IT';
+            updateLanguage(newLang);
+        });
+    }
+}
+
+function setupMobileMenu() {
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    if (hamburgerBtn && mobileMenu) {
+        hamburgerBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('open');
+        });
+        
+        // Chiudi menu quando si clicca fuori
+        document.addEventListener('click', (e) => {
+            if (!hamburgerBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.remove('open');
+            }
+        });
+    }
+}
+
+function setupProgressBar() {
+    const progressBar = document.getElementById('progressBar');
+    const interviewContainer = document.getElementById('interviewContainer');
+    const mobileInterview = document.getElementById('mobileInterview');
+    
+    function updateProgress() {
+        let container, scrollTop, scrollHeight, clientHeight;
+        
+        // Determina quale container usare (desktop o mobile)
+        if (window.innerWidth <= 768) {
+            container = mobileInterview;
+            scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            scrollHeight = document.documentElement.scrollHeight;
+            clientHeight = window.innerHeight;
+        } else {
+            container = interviewContainer;
+            if (!container) return;
+            scrollTop = container.scrollTop;
+            scrollHeight = container.scrollHeight;
+            clientHeight = container.clientHeight;
+        }
+        
+        if (!container || scrollHeight <= clientHeight) {
+            progressBar.style.opacity = '0';
+            return;
+        }
+        
+        const maxScroll = scrollHeight - clientHeight;
+        const scrollPercent = (scrollTop / maxScroll) * 100;
+        
+        if (scrollPercent > 0) {
+            progressBar.style.opacity = '1';
+            progressBar.style.width = Math.min(scrollPercent, 100) + '%';
+        } else {
+            progressBar.style.opacity = '0';
+        }
+    }
+    
+    // Event listeners per desktop
+    if (interviewContainer) {
+        interviewContainer.addEventListener('scroll', updateProgress);
+    }
+    
+    // Event listeners per mobile
+    window.addEventListener('scroll', updateProgress);
+    window.addEventListener('resize', updateProgress);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
     loadSiteData();
     setupLanguageToggle();
+    setupMobileMenu();
+    setupProgressBar();
 });

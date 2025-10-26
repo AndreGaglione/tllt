@@ -1,2 +1,4 @@
-{"git.path": "/usr/bin/git"
+{
+    "git.path": "/usr/bin/git",
+    "liveServer.settings.port": 5501
 }
