@@ -75,8 +75,18 @@ function loadSiteData() {
                                         const cleanUrl = url.trim();
                                         return `<img src="${convertToDirectLink(cleanUrl)}" alt="inline image" class="inline-interview-img">`;
                                     });
+                                    
+                                    // Processa i paragrafi con * per le domande
+                                    processedHtml = processQuestionParagraphs(processedHtml);
+                                    
                                     interviewContainer.innerHTML = processedHtml;
                                     mobileInterview.innerHTML = processedHtml;
+                                    
+                                    // Gestisci link esterni
+                                    setupExternalLinks();
+                                    
+                                    // Gestisci lightbox per immagini
+                                    setupImageLightbox();
                                 } else {
                                     const errorMsg = '<p>Unable to load interview content.</p>';
                                     interviewContainer.innerHTML = errorMsg;
@@ -197,6 +207,65 @@ function setupProgressBar() {
     // Event listeners per mobile
     window.addEventListener('scroll', updateProgress);
     window.addEventListener('resize', updateProgress);
+}
+
+function setupExternalLinks() {
+    // Gestisci tutti i link nell'intervista per aprirli in nuova finestra
+    const interviewLinks = document.querySelectorAll('.interview-section a, .mobile-interview a');
+    interviewLinks.forEach(link => {
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener noreferrer');
+    });
+}
+
+function setupImageLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxClose = document.getElementById('lightboxClose');
+    
+    // Rendi tutte le immagini cliccabili per lightbox
+    const images = document.querySelectorAll('.images-section img, .mobile-slider img, .inline-interview-img');
+    
+    images.forEach(img => {
+        img.style.cursor = 'pointer';
+        img.addEventListener('click', (e) => {
+            e.stopPropagation();
+            lightboxImg.src = img.src;
+            lightbox.classList.add('active');
+        });
+    });
+    
+    // Chiudi lightbox cliccando fuori dall'immagine
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+            lightbox.classList.remove('active');
+        }
+    });
+    
+    // Chiudi lightbox con X
+    lightboxClose.addEventListener('click', () => {
+        lightbox.classList.remove('active');
+    });
+    
+    // Chiudi lightbox con ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+            lightbox.classList.remove('active');
+        }
+    });
+}
+
+function processQuestionParagraphs(html) {
+    // Pattern per paragrafi in tag <p>
+    html = html.replace(/<p[^>]*>\s*\*([^*]+?)\*\s*<\/p>/gi, '<p class="question-paragraph">$1</p>');
+    
+    // Pattern per testo normale che inizia e finisce con * (separato da <br> o newline)
+    html = html.replace(/(?:^|<br\s*\/?>|\n)\s*\*([^*\n<]+?)\*\s*(?=<br\s*\/?>|\n|$)/gi, '<div class="question-paragraph">$1</div>');
+    
+    // Pattern per span o altri elementi inline che contengono testo con *
+    html = html.replace(/\*([^*<>\n]+?)\*/g, '<span class="question-text">$1</span>');
+    
+    return html;
 }
 
 window.addEventListener('DOMContentLoaded', () => {
